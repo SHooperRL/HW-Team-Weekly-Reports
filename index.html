@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Engineering Report</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ─── CONFIGURATION ─────────────────────────────────────────────────────────
+     WORKSTREAM TAGS — edit this list to add/remove/rename project tags.
+     Each entry is: "SHORT_CODE": "Display Label"
+     The SHORT_CODE is what appears in the generated report.
+  ─────────────────────────────────────────────────────────────────────────── */
+  :root {
+    --c-bg:        #F7F6F3;
+    --c-surface:   #FFFFFF;
+    --c-border:    #E2DFD8;
+    --c-border2:   #C8C4BB;
+    --c-text:      #1A1916;
+    --c-muted:     #6B6760;
+    --c-hint:      #A09C96;
+    --c-accent:    #1A1916;
+    --c-accent-bg: #1A1916;
+    --c-accent-fg: #F7F6F3;
+    --c-tag:       #EAE8E2;
+    --c-tag-text:  #3D3B37;
+    --c-danger:    #C0392B;
+    --c-warn-bg:   #FDF6E3;
+    --c-warn-bdr:  #E8D5A3;
+    --c-success:   #27622A;
+    --c-success-bg:#EFF7F0;
+    --radius:      6px;
+    --radius-lg:   10px;
+    --font-sans:   'IBM Plex Sans', sans-serif;
+    --font-mono:   'IBM Plex Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── LAYOUT ─── */
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ─── HEADER ─── */
+  .page-header {
+    margin-bottom: 40px;
+    border-bottom: 1.5px solid var(--c-text);
+    padding-bottom: 20px;
+  }
+  .page-header .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+    margin-bottom: 6px;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .page-header .sub {
+    font-size: 13px;
+    color: var(--c-muted);
+    margin-top: 6px;
+  }
+
+  /* ─── SECTION BLOCKS ─── */
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text);
+  }
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--c-border);
+  }
+
+  /* ─── META ROW ─── */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 540px) { .meta-grid { grid-template-columns: 1fr; } }
+
+  /* ─── CAPACITY PILLS ─── */
+  .cap-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .cap-label {
+    position: relative;
+    cursor: pointer;
+  }
+  .cap-label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+  .cap-pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    border: 1px solid var(--c-border2);
+    border-radius: 100px;
+    color: var(--c-muted);
+    background: var(--c-surface);
+    transition: all 0.12s ease;
+    user-select: none;
+  }
+  .cap-label input:checked + .cap-pill {
+    background: var(--c-accent-bg);
+    color: var(--c-accent-fg);
+    border-color: var(--c-accent-bg);
+  }
+  .cap-pill:hover { border-color: var(--c-text); color: var(--c-text); }
+
+  /* ─── FORM FIELDS ─── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+    margin-bottom: 5px;
+  }
+  .field label .req { color: var(--c-danger); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.12s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--c-text);
+  }
+  input::placeholder,
+  textarea::placeholder { color: var(--c-hint); }
+
+  textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6760' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  /* ─── ENTRY CARDS ─── */
+  .entry-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px 16px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .entry-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .entry-number {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--c-hint);
+    letter-spacing: 0.08em;
+  }
+  .entry-remove {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--c-hint);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.1s;
+    letter-spacing: 0.04em;
+  }
+  .entry-remove:hover { color: var(--c-danger); background: #FEF0EE; }
+
+  .entry-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 540px) { .entry-2col { grid-template-columns: 1fr; } }
+
+  /* ─── ADD ENTRY BUTTON ─── */
+  .add-btn {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    background: transparent;
+    border: 1px dashed var(--c-border2);
+    border-radius: var(--radius);
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s;
+    margin-top: 4px;
+  }
+  .add-btn:hover { border-color: var(--c-text); color: var(--c-text); background: var(--c-surface); }
+
+  /* ─── HINT TEXT ─── */
+  .hint {
+    font-size: 12px;
+    color: var(--c-hint);
+    margin-top: -10px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  /* ─── GENERATE BUTTON ─── */
+  .generate-wrap {
+    margin-top: 40px;
+    border-top: 1.5px solid var(--c-text);
+    padding-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .btn-generate {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-accent-fg);
+    background: var(--c-accent-bg);
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px 28px;
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+  .btn-generate:hover { opacity: 0.82; }
+
+  .btn-clear {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--c-muted);
+    background: none;
+    border: 1px solid var(--c-border2);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-clear:hover { border-color: var(--c-text); color: var(--c-text); }
+
+  /* ─── OUTPUT PANEL ─── */
+  #output-panel {
+    display: none;
+    margin-top: 32px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .output-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--c-border);
+    background: var(--c-bg);
+  }
+  .output-toolbar span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+  }
+  .btn-copy {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border2);
+    border-radius: var(--radius);
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-copy:hover { background: var(--c-text); color: var(--c-surface); }
+  .btn-copy.copied {
+    background: var(--c-success-bg);
+    color: var(--c-success);
+    border-color: var(--c-success);
+  }
+
+  .btn-send {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--c-accent-fg);
+    background: var(--c-accent-bg);
+    border: 1px solid var(--c-accent-bg);
+    border-radius: var(--radius);
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+  .btn-send:hover { opacity: 0.78; }
+
+  #output-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--c-text);
+    padding: 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: var(--c-surface);
+    border: none;
+    width: 100%;
+    min-height: 120px;
+    resize: none;
+    outline: none;
+  }
+
+  /* ─── VALIDATION ─── */
+  .validation-msg {
+    display: none;
+    padding: 12px 16px;
+    background: #FEF0EE;
+    border: 1px solid #F5C6C2;
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--c-danger);
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ─── PAGE HEADER ─── -->
+  <div class="page-header">
+    <div class="eyebrow">Hardware Design · Weekly Reporting</div>
+    <h1>Weekly Engineering Report</h1>
+    <div class="sub">Fill in each section, then click Generate Report to produce your formatted submission.</div>
+  </div>
+
+  <!-- ─── SECTION 1: HEADER ─── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Reporter &amp; Week</span>
+      <div class="section-rule"></div>
+    </div>
+    <div class="meta-grid">
+      <div class="field">
+        <label>Name / Initials <span class="req">*</span></label>
+        <select id="reporter-name">
+          <option value="">— Select your name —</option>
+          <option value="Ashley Henderson (AH)">Ashley Henderson (AH)</option>
+          <option value="Chris Honey (CH)">Chris Honey (CH)</option>
+          <option value="Damian Kozyra (DK)">Damian Kozyra (DK)</option>
+          <option value="Reza Mousavian (RM)">Reza Mousavian (RM)</option>
+          <option value="Alex O'Connell (AO)">Alex O'Connell (AO)</option>
+          <option value="Stephen Retford (SR)">Stephen Retford (SR)</option>
+          <option value="Stephen Taylor (ST)">Stephen Taylor (ST)</option>
+          <option value="Chamith Udagedara (CU)">Chamith Udagedara (CU)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Week Ending <span class="req">*</span></label>
+        <input type="date" id="week-ending">
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 2: LOAD & CAPACITY ─── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Load &amp; Capacity</span>
+      <div class="section-rule"></div>
+    </div>
+    <div class="field">
+      <label>Status <span class="req">*</span></label>
+      <div class="cap-group">
+        <label class="cap-label"><input type="radio" name="capacity" value="OVERLOADED"><span class="cap-pill">Overloaded</span></label>
+        <label class="cap-label"><input type="radio" name="capacity" value="BUSY"><span class="cap-pill">Busy</span></label>
+        <label class="cap-label"><input type="radio" name="capacity" value="BALANCED"><span class="cap-pill">Balanced</span></label>
+        <label class="cap-label"><input type="radio" name="capacity" value="UNDER-UTILISED"><span class="cap-pill">Under-utilised</span></label>
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label>Comments</label>
+      <textarea id="cap-comments" placeholder="Any relevant workload comments — what's driving the pressure, or why you have spare capacity."></textarea>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 3: COMMITTED WORK ─── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Committed Work</span>
+      <div class="section-rule"></div>
+    </div>
+    <p class="hint">List each meaningful activity as a separate entry. Select the workstream tag so related work across the team can be grouped in the consolidated report.</p>
+    <div id="committed-entries"></div>
+    <button class="add-btn" onclick="addEntry('committed')">+ Add entry</button>
+  </div>
+
+  <!-- ─── SECTION 4: REACTIVE DEMANDS ─── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Reactive Demands</span>
+      <div class="section-rule"></div>
+    </div>
+    <p class="hint">Unplanned work that consumed meaningful time. Use the same workstream tag if it relates to an existing project; leave as "— Unrelated / standalone —" if not.</p>
+    <div id="reactive-entries"></div>
+    <button class="add-btn" onclick="addEntry('reactive')">+ Add entry</button>
+  </div>
+
+  <!-- ─── SECTION 5: IMPEDIMENTS ─── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Impediments &amp; Dependencies</span>
+      <div class="section-rule"></div>
+    </div>
+    <p class="hint">One entry per blocker. Use the workstream tag to link it to the affected committed work.</p>
+    <div id="impediment-entries"></div>
+    <button class="add-btn" onclick="addEntry('impediment')">+ Add entry</button>
+  </div>
+
+  <!-- ─── SECTION 6: OUTLOOK ─── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Outlook for Next Week</span>
+      <div class="section-rule"></div>
+    </div>
+    <p class="hint">Your forward view. Use the same tags where your planned work continues a current workstream.</p>
+    <div id="outlook-entries"></div>
+    <button class="add-btn" onclick="addEntry('outlook')">+ Add entry</button>
+  </div>
+
+  <!-- ─── GENERATE ─── -->
+  <div class="generate-wrap">
+    <button class="btn-generate" onclick="generateReport()">Generate Report ↓</button>
+    <button class="btn-clear" onclick="clearAll()">Clear form</button>
+  </div>
+  <div class="validation-msg" id="validation-msg"></div>
+
+  <!-- ─── OUTPUT ─── -->
+  <div id="output-panel">
+    <div class="output-toolbar">
+      <span>Generated report</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-copy" id="copy-btn" onclick="copyReport()">Copy to clipboard</button>
+        <button class="btn-send" id="send-btn" onclick="sendByEmail()">Send by email ↗</button>
+      </div>
+    </div>
+    <textarea id="output-text" readonly></textarea>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORKSTREAM TAGS
+   Edit this object to add, remove, or rename workstreams.
+   Format: "DISPLAY_LABEL": "TAG_CODE"
+   The TAG_CODE appears in the generated report text.
+   The DISPLAY_LABEL is what engineers see in the dropdown.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const WORKSTREAMS = {
+  /* ── Active projects — edit these to match your real project names ── */
+  "AirPixel VCU":            "APVCU",
+  "Analog-CAN Converter":    "ANALOG-CAN",
+  "HD1":                     "HD1",
+  "HD1 Split":               "HD1-SPLIT",
+  "HD2":                     "HD2",
+  "HD2 German Police":       "HD2-POLIZEI",
+  "HD2 HW Updates":          "HD2-UPDATES",
+  "LabSat3 HW Updates":      "LS03-Updates",
+  "LabSat4 Expansion Unit":  "LS04-EXP",
+  "LabSat4-V2":              "LS04-V2",
+  "LabSat4-V3 (NVMe)":       "LS04-V3",
+  "Mini-LapTimer/OLED":      "MINI-LAP",
+  "Multi-camera System":     "MULTICAM",
+  "PalmerSport":             "PS02",
+  "Team Objectives":         "OBJECTIVES",
+  "VBOX4 Updates":           "VBOX4-UPDATES",
+  "VB3iS Replacement":       "VB3iS-NEW",
+  "VBSS Replacements":       "VBSS-NEW",
+  "VIPSRPM-V2":              "VIPSRPM-V2",
+  "VB Motion Pack Boxed":    "VMP-BOXED",
+  "VB Motion Pack Unboxed":  "VMP-UNBOXED",
+  /* ── Leave this last — it's the fallback for reactive/unrelated items ── */
+  "— Unrelated / standalone —": ""
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENTRY TEMPLATES — each section type has its own field structure
+   ═══════════════════════════════════════════════════════════════════════════ */
+const ENTRY_CONFIGS = {
+  committed: {
+    label: "entry",
+    fields: [
+      { key: "tag",   label: "Workstream / project", type: "workstream", required: true, col: "full" },
+      { key: "notes", label: "Progress / notes",     type: "textarea",   required: true, col: "full",
+        placeholder: "What you did, where things stand, what's left. Note status (e.g. on track / at risk / blocked / complete, etc.) in your own words." }
+    ]
+  },
+  reactive: {
+    label: "entry",
+    optional: true,
+    fields: [
+      { key: "tag",   label: "Workstream tag (if applicable)", type: "workstream", required: false, col: "left"  },
+      { key: "time",  label: "Approx. time taken",            type: "text",       required: false, col: "right",
+        placeholder: "e.g. ~half day, ~2 hrs" },
+      { key: "notes", label: "What it was / where it came from", type: "textarea",required: false, col: "full",
+        placeholder: "Source, nature of request, who was involved." }
+    ]
+  },
+  impediment: {
+    label: "entry",
+    optional: true,
+    fields: [
+      { key: "tag",   label: "Workstream being blocked", type: "workstream", required: false, col: "full" },
+      { key: "notes", label: "Description & impact",     type: "textarea",   required: false, col: "full",
+        placeholder: "What's blocked, what you're waiting on, and what the consequence is if unresolved." }
+    ]
+  },
+  outlook: {
+    label: "entry",
+    fields: [
+      { key: "tag",   label: "Workstream tag (if applicable)", type: "workstream", required: false, col: "full" },
+      { key: "notes", label: "Planned activity",               type: "textarea",   required: true,  col: "full",
+        placeholder: "What you expect to be working on. Note any capacity concerns or support needed." }
+    ]
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+const counters = { committed: 0, reactive: 0, impediment: 0, outlook: 0 };
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUILD WORKSTREAM DROPDOWN OPTIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+function buildWorkstreamOptions(required) {
+  let html = required
+    ? '<option value="">— Select workstream —</option>'
+    : '<option value="">— Unrelated / standalone —</option>';
+  for (const [label, code] of Object.entries(WORKSTREAMS)) {
+    if (label === "— Unrelated / standalone —") continue;
+    html += `<option value="${code}">${label}</option>`;
+  }
+  return html;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADD ENTRY
+   ═══════════════════════════════════════════════════════════════════════════ */
+function addEntry(section) {
+  const cfg = ENTRY_CONFIGS[section];
+  const idx = ++counters[section];
+  const container = document.getElementById(`${section}-entries`);
+
+  let fieldsHtml = '';
+  let inRow = false;
+  const fields = cfg.fields;
+
+  for (let i = 0; i < fields.length; i++) {
+    const f = fields[i];
+    const id = `${section}-${idx}-${f.key}`;
+    const reqMark = f.required ? '<span class="req">*</span>' : '';
+    let inputHtml = '';
+
+    if (f.type === 'workstream') {
+      inputHtml = `<select id="${id}" data-section="${section}" data-idx="${idx}" data-key="${f.key}">
+        ${buildWorkstreamOptions(f.required)}
+      </select>`;
+    } else if (f.type === 'select') {
+      const opts = f.options.map(o => `<option value="${o}">${o}</option>`).join('');
+      inputHtml = `<select id="${id}" data-section="${section}" data-idx="${idx}" data-key="${f.key}"><option value="">— Select —</option>${opts}</select>`;
+    } else if (f.type === 'textarea') {
+      inputHtml = `<textarea id="${id}" data-section="${section}" data-idx="${idx}" data-key="${f.key}" placeholder="${f.placeholder || ''}"></textarea>`;
+    } else {
+      inputHtml = `<input type="text" id="${id}" data-section="${section}" data-idx="${idx}" data-key="${f.key}" placeholder="${f.placeholder || ''}">`;
+    }
+
+    const fieldHtml = `<div class="field"><label for="${id}">${f.label} ${reqMark}</label>${inputHtml}</div>`;
+
+    if (f.col === 'full') {
+      if (inRow) { fieldsHtml += '</div>'; inRow = false; }
+      fieldsHtml += fieldHtml;
+    } else if (f.col === 'left') {
+      if (inRow) { fieldsHtml += '</div>'; }
+      fieldsHtml += `<div class="entry-2col">${fieldHtml}`;
+      inRow = true;
+    } else if (f.col === 'right') {
+      fieldsHtml += fieldHtml;
+      if (inRow) { fieldsHtml += '</div>'; inRow = false; }
+    }
+  }
+  if (inRow) fieldsHtml += '</div>';
+
+  const card = document.createElement('div');
+  card.className = 'entry-card';
+  card.dataset.section = section;
+  card.dataset.idx = idx;
+  card.innerHTML = `
+    <div class="entry-card-header">
+      <span class="entry-number">${section.toUpperCase()} · ${String(idx).padStart(2,'0')}</span>
+      ${idx > 1 ? `<button class="entry-remove" onclick="removeEntry(this)" title="Remove entry">✕ remove</button>` : ''}
+    </div>
+    ${fieldsHtml}
+  `;
+  container.appendChild(card);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REMOVE ENTRY
+   ═══════════════════════════════════════════════════════════════════════════ */
+function removeEntry(btn) {
+  btn.closest('.entry-card').remove();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COLLECT SECTION VALUES
+   ═══════════════════════════════════════════════════════════════════════════ */
+function collectSection(section) {
+  const cards = document.querySelectorAll(`.entry-card[data-section="${section}"]`);
+  const entries = [];
+  cards.forEach(card => {
+    const entry = {};
+    card.querySelectorAll('[data-section]').forEach(el => {
+      entry[el.dataset.key] = el.value.trim();
+    });
+    entries.push(entry);
+  });
+  return entries;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORMAT DATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+function formatDate(isoDate) {
+  if (!isoDate) return '';
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${d} ${months[m-1]} ${y}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GET TAG DISPLAY LABEL FROM CODE
+   ═══════════════════════════════════════════════════════════════════════════ */
+function tagLabel(code) {
+  if (!code) return '(unrelated)';
+  for (const [label, c] of Object.entries(WORKSTREAMS)) {
+    if (c === code) return label;
+  }
+  return code;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VALIDATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+function validate() {
+  const errors = [];
+  if (!document.getElementById('reporter-name').value) errors.push('Please select your name.');
+  if (!document.getElementById('week-ending').value)   errors.push('Please enter the week ending date.');
+  if (!document.querySelector('input[name="capacity"]:checked')) errors.push('Please select a Load & Capacity status.');
+
+  const requiredSections = ['committed', 'reactive', 'impediment', 'outlook'];
+  requiredSections.forEach(sec => {
+    const cfg = ENTRY_CONFIGS[sec];
+    const cards = document.querySelectorAll(`.entry-card[data-section="${sec}"]`);
+    cards.forEach((card, ci) => {
+      // For optional sections, skip validation if the card is entirely blank
+      if (cfg.optional) {
+        const allBlank = cfg.fields.every(f => {
+          const el = card.querySelector(`[data-key="${f.key}"]`);
+          return !el || !el.value.trim();
+        });
+        if (allBlank) return;
+      }
+      cfg.fields.forEach(f => {
+        if (!f.required) return;
+        const el = card.querySelector(`[data-key="${f.key}"]`);
+        if (el && !el.value.trim()) {
+          const secLabel = sec.charAt(0).toUpperCase() + sec.slice(1);
+          errors.push(`${secLabel} entry ${ci+1}: "${f.label}" is required.`);
+        }
+      });
+    });
+  });
+  return errors;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GENERATE REPORT
+   ═══════════════════════════════════════════════════════════════════════════ */
+function generateReport() {
+  const errors = validate();
+  const msgEl = document.getElementById('validation-msg');
+  if (errors.length) {
+    msgEl.style.display = 'block';
+    msgEl.innerHTML = errors.map(e => `• ${e}`).join('<br>');
+    msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  msgEl.style.display = 'none';
+
+  const reporter  = document.getElementById('reporter-name').value;
+  const weekDate  = formatDate(document.getElementById('week-ending').value);
+  const capacity  = document.querySelector('input[name="capacity"]:checked').value;
+  const capNotes  = document.getElementById('cap-comments').value.trim();
+
+  const committed  = collectSection('committed');
+  const reactive   = collectSection('reactive');
+  const impediment = collectSection('impediment');
+  const outlook    = collectSection('outlook');
+
+  const lines = [];
+  const line  = s => lines.push(s);
+  const blank = () => lines.push('');
+
+  const hr = () => line('─'.repeat(58));
+
+  line('__WEEKLY REPORT__');
+  line(reporter);
+  blank();
+  line(`WEEK ENDING: ${weekDate}`);
+  blank();
+  blank();
+  hr();
+  line('__LOAD & CAPACITY__');
+  hr();
+  blank();
+  line(`[x] ${capacity}`);
+  blank();
+  line('COMMENTS:');
+  line(capNotes || 'None.');
+  blank();
+  blank();
+
+  hr();
+  line('__COMMITTED WORK__');
+  hr();
+  blank();
+  if (committed.length === 0) {
+    line('None reported.');
+  } else {
+    committed.forEach((e, i) => {
+      if (i > 0) blank();
+      line(`ENTRY ${i+1}`);
+      line(`  TAG:   ${e.tag ? `[${e.tag}] ${tagLabel(e.tag)}` : '(none)'}`);
+      line(`  NOTES: ${e.notes || '—'}`);
+    });
+  }
+  blank();
+  blank();
+
+  hr();
+  line('__REACTIVE DEMANDS__');
+  hr();
+  blank();
+  const reactiveFiltered = reactive.filter(e => e.notes || e.tag || e.time);
+  if (reactiveFiltered.length === 0) {
+    line('None reported.');
+  } else {
+    reactiveFiltered.forEach((e, i) => {
+      if (i > 0) blank();
+      line(`ENTRY ${i+1}`);
+      if (e.tag) {
+        line(`  TAG:   [${e.tag}] ${tagLabel(e.tag)}`);
+      } else {
+        line(`  TAG:   (unrelated to active workstream)`);
+      }
+      line(`  TIME:  ${e.time || 'Not specified'}`);
+      line(`  NOTES: ${e.notes || '—'}`);
+    });
+  }
+  blank();
+  blank();
+
+  hr();
+  line('__IMPEDIMENTS & DEPENDENCIES__');
+  hr();
+  blank();
+  const impedimentFiltered = impediment.filter(e => e.notes || e.tag);
+  if (impedimentFiltered.length === 0) {
+    line('None reported.');
+  } else {
+    impedimentFiltered.forEach((e, i) => {
+      if (i > 0) blank();
+      line(`ENTRY ${i+1}`);
+      line(`  TAG:   [${e.tag}] ${tagLabel(e.tag)}`);
+      line(`  NOTES: ${e.notes || '—'}`);
+    });
+  }
+  blank();
+  blank();
+
+  hr();
+  line('__OUTLOOK FOR NEXT WEEK__');
+  hr();
+  blank();
+  if (outlook.length === 0) {
+    line('None reported.');
+  } else {
+    outlook.forEach((e, i) => {
+      if (i > 0) blank();
+      line(`ENTRY ${i+1}`);
+      if (e.tag) {
+        line(`  TAG:   [${e.tag}] ${tagLabel(e.tag)}`);
+      } else {
+        line(`  TAG:   (unrelated to active workstream)`);
+      }
+      line(`  NOTES: ${e.notes || '—'}`);
+    });
+  }
+  blank();
+  hr();
+
+  const output = lines.join('\n');
+  document.getElementById('output-text').value = output;
+  document.getElementById('output-text').style.height = 'auto';
+  document.getElementById('output-text').style.height =
+    Math.min(600, document.getElementById('output-text').scrollHeight + 4) + 'px';
+
+  const panel = document.getElementById('output-panel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.classList.remove('copied');
+  copyBtn.textContent = 'Copy to clipboard';
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COPY TO CLIPBOARD
+   ═══════════════════════════════════════════════════════════════════════════ */
+function copyReport() {
+  const text = document.getElementById('output-text').value;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy to clipboard';
+      btn.classList.remove('copied');
+    }, 2500);
+  }).catch(() => {
+    document.getElementById('output-text').select();
+    document.execCommand('copy');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SEND BY EMAIL
+   ═══════════════════════════════════════════════════════════════════════════ */
+function sendByEmail() {
+  const text = document.getElementById('output-text').value;
+  if (!text) return;
+  const reporter = document.getElementById('reporter-name').value || 'Engineer';
+  const weekDate = document.getElementById('week-ending').value;
+  const subject  = encodeURIComponent(`Weekly Report — ${reporter} — w/e ${weekDate}`);
+  const body     = encodeURIComponent(text);
+  window.location.href = `mailto:simon.hooper@racelogic.co.uk?subject=${subject}&body=${body}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLEAR ALL
+   ═══════════════════════════════════════════════════════════════════════════ */
+function clearAll() {
+  if (!confirm('Clear all form fields and start over?')) return;
+  document.getElementById('reporter-name').value = '';
+  document.getElementById('week-ending').value   = '';
+  document.querySelectorAll('input[name="capacity"]').forEach(r => r.checked = false);
+  document.getElementById('cap-comments').value  = '';
+  ['committed','reactive','impediment','outlook'].forEach(sec => {
+    document.getElementById(`${sec}-entries`).innerHTML = '';
+    counters[sec] = 0;
+    addEntry(sec);
+  });
+  document.getElementById('output-panel').style.display = 'none';
+  document.getElementById('validation-msg').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INIT — add first entry to each section on load
+   ═══════════════════════════════════════════════════════════════════════════ */
+['committed','reactive','impediment','outlook'].forEach(sec => addEntry(sec));
+</script>
+</body>
+</html>
